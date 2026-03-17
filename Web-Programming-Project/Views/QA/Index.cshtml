@@ -1,0 +1,328 @@
+﻿@model List<Web_Programming_Project.Models.Question>
+
+@{
+    ViewBag.Title = "Soru & Cevap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    bool isAdmin = false;
+    if (User.Identity.IsAuthenticated)
+    {
+        using (var dbCheck = new Web_Programming_Project.Models.DbPersonal())
+        {
+            var activeUser = dbCheck.Users.FirstOrDefault(x => x.Email == User.Identity.Name);
+            if (activeUser != null && activeUser.Role == "Admin")
+            {
+                isAdmin = true;
+            }
+        }
+    }
+}
+
+<link rel="stylesheet" href="~/Content/about.css">
+<link rel="stylesheet" href="~/Content/contact.css">
+<style>
+    .main-qa-wrapper {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+        padding: 20px;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .about-left {
+        width: 250px;
+        flex-shrink: 0;
+    }
+
+    .qa-page-container {
+        flex-grow: 1;
+        min-width: 0;
+        max-width: calc(100% - 280px);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .qa-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        color: white;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 30px;
+    }
+
+    .ask-box {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border: 1px solid #eee;
+    }
+
+    .custom-input-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .ask-input {
+        flex-grow: 1;
+        min-width: 0;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 30px;
+        outline: none;
+    }
+
+    .btn-ask {
+        background-color: #764ba2;
+        color: white;
+        border: none;
+        padding: 0 30px;
+        border-radius: 30px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .question-card {
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #f0f0f0;
+        width: 100%;
+        box-sizing: border-box;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .q-header {
+        padding: 15px 20px;
+        background-color: #f9f9f9;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-badge {
+        font-weight: bold;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .date-badge {
+        font-size: 0.85rem;
+        color: #999;
+    }
+
+    .q-body {
+        padding: 20px;
+        color: #333;
+        font-size: 1.1rem;
+        line-height: 1.5;
+    }
+
+    .answer-section {
+        background-color: #f1f8ff;
+        border-top: 1px solid #e1e4e8;
+        padding: 20px;
+        position: relative;
+    }
+
+        .answer-section::before {
+            content: "🎬 Editörün Cevabı";
+            display: block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #195FD2;
+            margin-bottom: 8px;
+        }
+
+    .admin-controls {
+        padding: 15px 20px;
+        background-color: #fff8e1;
+        border-top: 1px dashed #ddd;
+    }
+
+    .status-pending {
+        padding: 15px 20px;
+        color: #888;
+        font-style: italic;
+    }
+
+    .btn-delete-q {
+        background: #ff4757;
+        color: white;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-left: 10px;
+    }
+
+        .btn-delete-q:hover {
+            background: #ff6b81;
+        }
+
+    .btn-edit-q {
+        background: #195FD2;
+        color: white;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 10px;
+    }
+
+    .edit-mode {
+        display: none;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="main-qa-wrapper">
+    <aside class="about-left">
+        <div class="menu-block">
+            <span class="menu-title">Kurumsal</span>
+            <ul>
+                <li><a href="@Url.Action("About", "Home")">Hakkımızda</a></li>
+                <li><a href="@Url.Action("Contact", "Home")">İletişim</a></li>
+            </ul>
+        </div>
+        <div class="menu-block">
+            <span class="menu-title">Yardım</span>
+            <ul>
+                <li><a href="@Url.Action("Index", "QA")" style="font-weight:bold; color:#764ba2;">SSS</a></li>
+                <li><a href="@Url.Action("Help", "Home")">İptal / İade</a></li>
+                <li><a href="@Url.Action("Help", "Home")">Nasıl Bilet Alınır?</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <div class="qa-page-container">
+        <div class="qa-header">
+            <h2 style="margin:0;">🍿 Film Topluluğu & Soru Cevap</h2>
+            <p style="margin:10px 0 0; opacity:0.9;">Merak ettiğin filmleri sor, tartışalım!</p>
+        </div>
+
+        <div class="ask-box">
+            @using (Html.BeginForm("Ask", "QA", FormMethod.Post))
+            {
+                <div class="custom-input-group">
+                    <input type="text" name="questionText" class="ask-input" placeholder="Hangi filmi merak ediyorsun?" required>
+                    <button class="btn-ask" type="submit">GÖNDER 🚀</button>
+                </div>
+            }
+        </div>
+
+        <div class="questions-list">
+            @foreach (var item in Model)
+            {
+                <div class="question-card" id="card-@item.ID">
+                    <div class="q-header">
+                        <div style="display:flex; align-items:center;">
+                            <span class="user-badge">👤 @item.AskerName</span>
+                            @if (isAdmin)
+                            {
+                                using (Html.BeginForm("Delete", "QA", new { id = item.ID }, FormMethod.Post, new { id = "deleteForm_" + item.ID, style = "display:inline;" }))
+                                {
+                                    <button type="button" class="btn-delete-q" onclick="if(confirm('Bu soruyu silmek istediğinize emin misiniz?')) { document.getElementById('deleteForm_@item.ID').submit(); }">
+                                        🗑️ Sil
+                                    </button>
+                                }
+                            }
+                        </div>
+                        <span class="date-badge">📅 @item.Date.ToString("dd.MM.yyyy HH:mm")</span>
+                    </div>
+
+                    <div class="q-body">
+                        @item.Text
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(item.Answer))
+                    {
+                        <div class="answer-section">
+                            <div class="display-mode">
+                                <span class="answer-text">@item.Answer</span>
+                                @if (isAdmin)
+                                {
+                                    <br />
+                                    <button type="button" class="btn-edit-q" onclick="toggleEdit('@item.ID')">📝 Cevabı Düzenle</button>
+                                }
+                            </div>
+
+                            @if (isAdmin)
+                            {
+                                <div class="edit-mode" id="edit-@item.ID">
+                                    @using (Html.BeginForm("Answer", "QA", FormMethod.Post))
+                                    {
+                                        <input type="hidden" name="id" value="@item.ID" />
+                                        <textarea name="answerText" class="form-control" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;" rows="3">@item.Answer</textarea>
+                                        <div style="margin-top:10px; display:flex; gap:10px;">
+                                            <button type="submit" class="btn btn-success btn-sm">Güncelle</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEdit('@item.ID')">İptal</button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="status-pending">
+                            ⏳ Henüz cevaplanmadı, editörlerimiz inceliyor...
+                        </div>
+                        if (isAdmin)
+                        {
+                            <div class="admin-controls">
+                                @using (Html.BeginForm("Answer", "QA", FormMethod.Post))
+                                {
+                                    <input type="hidden" name="id" value="@item.ID" />
+                                    <div style="display:flex; gap:10px;">
+                                        <input type="text" name="answerText" class="form-control" placeholder="Admin cevabını yaz..." style="flex:1; padding:8px; border:1px solid #ccc; border-radius:5px;" required>
+                                        <button type="submit" class="btn btn-success btn-sm">Yanıtla</button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function toggleEdit(id) {
+            const card = document.getElementById('card-' + id);
+            const displayMode = card.querySelector('.display-mode');
+            const editMode = card.querySelector('.edit-mode');
+
+            if (displayMode.style.display === 'none') {
+                displayMode.style.display = 'block';
+                editMode.style.display = 'none';
+            } else {
+                displayMode.style.display = 'none';
+                editMode.style.display = 'block';
+            }
+        }
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                setTimeout(() => {
+                    const loader = document.getElementById("global-loader");
+                    if (loader && document.activeElement.type !== 'submit') {
+                        loader.style.display = "none";
+                    }
+                }, 100);
+            });
+        });
+    </script>
+}
